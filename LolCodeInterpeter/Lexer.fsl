@@ -1,0 +1,100 @@
+﻿{
+module Lexer
+
+open System
+open System.Globalization
+open Microsoft.FSharp.Text.Lexing
+
+let lexeme = LexBuffer<_>.LexemeString
+
+let log id str = () //printf "%s %s\n" id str
+}
+
+
+let whitespace = [' ' '\t' ]
+let newline = ('\n' | '\r' '\n')
+let comma = ','
+
+let anyNotQuote   = [^'"']
+let literal       = '"'anyNotQuote*'"'
+let digits        = ['0'-'9']*
+let decimal		  = ['0'-'9']+'.'['0'-'9']+
+let identifier    = ['a'-'z' 'A'-'Z']*
+
+rule tokenstream = parse
+
+| "HAI" 		{ log "START" (lexeme lexbuf); Parser.HELLO }
+| "KTHXBYE" 	{ log "END" (lexeme lexbuf); Parser.END }
+| "VISIBLE"		{ log "PRINT" (lexeme lexbuf); Parser.PRINT }
+| "I"			{ log "I" (lexeme lexbuf); Parser.I }
+| "HAZ"			{ log "HAZ" (lexeme lexbuf); Parser.HAZ }
+| "A"			{ log "A" (lexeme lexbuf); Parser.A }
+| "ITZ"			{ log "IT" (lexeme lexbuf); Parser.ITZ }
+
+| "OH"			{ log "OH" (lexeme lexbuf); Parser.OH }
+| "RLY?"		{ log "RLY?" (lexeme lexbuf); Parser.RRLY }
+| "OIC"			{ log "OIC" (lexeme lexbuf); Parser.OIC }
+| "YA"			{ log "YA" (lexeme lexbuf); Parser.YA }
+| "RLY"			{ log "RLY" (lexeme lexbuf); Parser.RLY }
+| "NO"			{ log "NO" (lexeme lexbuf); Parser.NO }
+| "WAI"			{ log "WAI" (lexeme lexbuf); Parser.WAI }
+| "WIN"			{ log "WIN" (lexeme lexbuf); Parser.TROOF true }
+| "FAIL"		{ log "FAIL" (lexeme lexbuf); Parser.TROOF false }
+| "R"			{ log "R" (lexeme lexbuf); Parser.R }
+| "SUM"			{ log "SUM" (lexeme lexbuf); Parser.SUM }
+| "OF"			{ log "OF" (lexeme lexbuf); Parser.OF }
+| "AN"			{ log "AN" (lexeme lexbuf); Parser.AN }
+| "IM"			{ log "IM" (lexeme lexbuf); Parser.IM } 
+| "IN"			{ log "IN" (lexeme lexbuf); Parser.IN }
+| "YR"			{ log "YR" (lexeme lexbuf); Parser.YR }
+| "TIL"			{ log "TIL" (lexeme lexbuf); Parser.TIL }
+| "WILE"		{ log "WILE" (lexeme lexbuf); Parser.WILE }
+| "OUTTA"		{ log "OUTTA" (lexeme lexbuf); Parser.OUTTA }
+| "UPPIN"		{ log "UPPIN" (lexeme lexbuf); Parser.UPPIN }
+| "NERFIN"		{ log "NERFIN" (lexeme lexbuf); Parser.NERFIN }
+| "BOTH"		{ log "BOTH" (lexeme lexbuf); Parser.BOTH }
+| "EITHER"		{ log "EITHER" (lexeme lexbuf); Parser.EITHER }
+| "MEBBE"		{ log "MEBBE" (lexeme lexbuf); Parser.MEBBE }
+| "PRODUKT"		{ log "PRODUCT" (lexeme lexbuf); Parser.PRODUKT }
+| "QUOSHUNT"	{ log "QUOSHUNT " (lexeme lexbuf); Parser.QUOSHUNT }
+| "BIGGR"		{ log "BIGGR" (lexeme lexbuf); Parser.BIGGR }
+| "SMALLR"		{ log "SMALLR" (lexeme lexbuf); Parser.SMALLR }
+| "MOD"			{ log "MOD" (lexeme lexbuf); Parser.MOD }
+| "GTFO"		{ log "GTFO" (lexeme lexbuf); Parser.GTFO }
+| "SAEM"		{ log "SAEM" (lexeme lexbuf); Parser.SAEM }
+| "DIFFRINT"	{ log "DIFFRINT" (lexeme lexbuf); Parser.DIFFRINT }
+| "SMOOSH"		{ log "SMOOSH" (lexeme lexbuf); Parser.SMOOSH }
+| "MKAY"		{ log "MKAY" (lexeme lexbuf); Parser.MKAY }
+| "MAEK"		{ log "MAEK" (lexeme lexbuf); Parser.MAEK }
+| "NOT"			{ log "NOT" (lexeme lexbuf); Parser.NOT }
+| "IS"			{ log "IS" (lexeme lexbuf); Parser.IS }
+| "NOW"			{ log "NOW" (lexeme lexbuf); Parser.NOW }
+| "GIMMEH"		{ log "GIMMEH" (lexeme lexbuf); Parser.GIMMEH }
+
+| "WTF?"			{ log "WTF" (lexeme lexbuf); Parser.WTF }
+| "OMG"			{ log "OMG" (lexeme lexbuf); Parser.OMG }
+| "OMGWTF"		{ log "GIMMEH" (lexeme lexbuf); Parser.OMGWTF }
+  
+
+| "NUMBR"		{ log "T_NUMBR" (lexeme lexbuf); Parser.T_NUMBR }
+| "NUMBAR"	{ log "T_NUMBAR" (lexeme lexbuf); Parser.T_NUMBAR }
+| "TROOF"		{ log "T_TROOF" (lexeme lexbuf); Parser.T_TROOF }
+| "YARN"		{ log "T_YARN" (lexeme lexbuf); Parser.T_YARN }
+| "NOOB"		{ log "T_NOOB" (lexeme lexbuf); Parser.T_NOOB }
+
+
+
+     
+
+| identifier	{ log "IDENTIFIER" (lexeme lexbuf); Parser.IDENTIFIER( lexeme lexbuf ) }
+| literal 		{ log "TEXT" (lexeme lexbuf); Parser.YARN( lexeme lexbuf ) }
+| decimal		{ log "NUMBAR" (lexeme lexbuf); Parser.NUMBAR (System.Double.Parse(lexeme lexbuf, CultureInfo.InvariantCulture )) }
+| digits		{ log "NUMBR" (lexeme lexbuf); Parser.NUMBR (System.Int32.Parse(lexeme lexbuf )) }
+ 
+| newline		{ log "NEWLINE" ""; Parser.NEWLINE }
+| comma			{ log "NEWLINE" ","; Parser.NEWLINE }
+| whitespace	{ tokenstream lexbuf }
+| eof   		{ tokenstream lexbuf }
+
+
+

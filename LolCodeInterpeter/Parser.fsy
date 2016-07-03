@@ -1,0 +1,145 @@
+﻿%{
+open AST
+%}
+
+
+%start start
+
+// Regular tokens
+
+%token NEWLINE
+%token PRINT
+%token T_NUMBR T_NUMBAR T_TROOF T_YARN T_NOOB
+%token HELLO END COMMA EOF I HAZ A  RRLY RLY OH YA OIC NO WAI ITZ R SUM OF
+%token AN DIFF IM IN YR TIL WILE OUTTA UPPIN NERFIN BOTH EITHER MEBBE 
+%token PRODUKT QUOSHUNT BIGGR SMALLR MOD GTFO SAEM DIFFRINT SMOOSH MKAY MAEK
+%token NOT IS NOW GIMMEH WTF OMG OMGWTF
+
+
+%token <string> YARN IDENTIFIER
+%token <int> NUMBR
+%token <double> NUMBAR
+%token <bool> TROOF
+
+
+%type < AST.Statement list > start
+
+%%
+
+start: Program { $1 }
+
+Program:
+	| HELLO	NEWLINE StatementList END { reverseAndCleanStatements $3 }
+
+StatementList:
+	| Statement { [ $1 ] }
+	| StatementList Statement { $2 :: $1  }
+	
+Statement:
+	| Print NEWLINE				{ $1 } 
+	| Variable NEWLINE			{ $1 }
+	| Conditional NEWLINE		{ $1 }
+	| Switch NEWLINE			{ Switch $1 }
+	| Loop	NEWLINE				{ $1 } 
+	| Expression NEWLINE		{ Declaration ( "IT", $1) }
+	| Unary NEWLINE				{ UnaryStmt  $1 }
+	| GTFO	NEWLINE				{ Break } 
+	| Input NEWLINE				{ $1 }
+	| NEWLINE					{ Empty }
+
+Print:
+	| PRINT ExpressionList 	{ Print (Concatenate (List.rev $2)) } 
+
+Input:
+	| GIMMEH IDENTIFIER	{ Input $2 }
+
+Switch:
+	| WTF NEWLINE Cases OIC { reverseAndCleanStatements $3 }
+
+Cases: 
+	| Case { [ $1 ] }
+	| Cases Case { $2 :: $1 }
+	| Cases DefaultCase {  List.append $2  $1  }
+
+Case:
+	| OMG Literal NEWLINE StatementList { Conditional( Comparison(Equals, Identifier("IT"), $2 ),  reverseAndCleanStatements $4, [])  }
+
+DefaultCase:
+	| OMGWTF NEWLINE StatementList { $3 }
+
+
+Conditional:
+	| OH RRLY NEWLINE YA RLY NEWLINE StatementList Mebbe OIC { Conditional( Identifier "IT", reverseAndCleanStatements $7, $8 ) }
+	
+Mebbe:
+	| { [] } 
+	| NO WAI NEWLINE StatementList { $4 }
+	| MEBBE Expression NEWLINE StatementList Mebbe { [ Conditional( $2, reverseAndCleanStatements $4, reverseAndCleanStatements $5 ) ]}
+
+Loop:
+	| IM IN YR IDENTIFIER LoopOperation LoopTerminator NEWLINE StatementList IM OUTTA YR IDENTIFIER { Loop ($5, $6, reverseAndCleanStatements $8) }
+
+LoopOperation:
+	| { LoopOperator.Empty } 
+	| Unary  { Operation $1 }
+
+LoopTerminator:
+	| { LoopTerminator.Empty } 
+	| TIL Expression { Til $2 }
+	| WILE Expression { Wile $2 }
+
+Variable:
+	| I HAZ A IDENTIFIER VariableInitializer { Declaration ($4, $5) }
+	| IDENTIFIER R Expression	{ Declaration ($1, $3) }
+	| IDENTIFIER IS NOW A Type  { Declaration ($1, Cast(Identifier($1), $5)) }
+
+VariableInitializer:
+	| { Noob } 
+	| ITZ Expression { $2 }
+
+Unary:
+	| UPPIN YR IDENTIFIER { Numeric ($3, 1) }
+	| NERFIN YR IDENTIFIER { Numeric ($3, -1) }
+
+Expression: 
+	| Literal { $1 }
+	| CalcOperator Expression AN Expression { Calc ($1, $2, $4) }
+	| BooleanOperator Expression AN Expression { Boolean ($1, $2, $4) }
+	| ComparisonOperator Expression AN Expression { Comparison ($1, $2, $4) }
+	| SMOOSH ExpressionList MKAY { Concatenate (List.rev $2) }
+	| MAEK Expression A Type { Cast ($2, $4) }
+
+ExpressionList:
+	| Expression { [ $1 ] }
+	| ExpressionList AN Expression { $3 :: $1 }
+
+Literal:
+	| YARN			{ Yarn $1 }
+	| NUMBR			{ Numbr $1 }  
+	| NUMBAR		{ Numbar $1 }
+	| TROOF			{ Troof $1 }
+	| IDENTIFIER	{ Identifier $1 }
+
+BooleanOperator:
+	| BOTH OF	{ And }
+	| EITHER OF { Or }
+
+ComparisonOperator:
+	| BOTH SAEM { Equals } 
+	| DIFFRINT	{ NotEquals }
+
+
+CalcOperator:
+	| BIGGR OF		{ Greater }
+	| SMALLR OF		{ Lesser }
+	| SUM OF		{ Plus }
+	| DIFF OF		{ Minus }
+	| PRODUKT OF	{ Mult }
+	| QUOSHUNT OF	{ Div }
+
+Type :
+	| T_NUMBR	{ T_Numbr }
+	| T_TROOF	{ T_Troof }
+	| T_NUMBAR	{ T_Numbar }
+	| T_YARN	{ T_Yarn }
+	| T_NOOB	{ T_Noob }
